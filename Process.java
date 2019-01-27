@@ -127,19 +127,21 @@ public class Process {
                         {2100, 1500, 2200, 1800, 2200, 2000}
                       }};
     Process p[] = new Process[90];
-    // List p = new ArrayList();
     int idx = 0;
     for(int i = 0; i < 5; i++){ // process
       for(int j = 0; j < 3; j++){ //lv
         for(int k = 0; k < 6; k++){ //month
           p[idx] = new Process(proc[i][j], proc_num[i][j][k], lv[j+1], i, j+1, k);
-          // p.add(new Process(proc[i][j], proc_num[i][j][k], lv[j+1], i, j+1, k));
           idx++;
         }
       }
     }
 
     Arrays.sort(p, Comparator.comparing(Process::getYoyudo).reversed());
+    System.out.println(p[0].getProcess());
+    System.out.println(p[0].getLv());
+    System.out.println(p[0].getMonth());
+
 
 
 
