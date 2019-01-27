@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.*;
 
 public class Process {
 
@@ -86,20 +87,12 @@ public class Process {
   }
 }
 
-  private double yoyudo() {
+  private void yoyudo() {
     this.yoyudo = this.need_human() / this.human_num;
-    // return this.need_human() / this.human_num;
-    return this.yoyudo;
   }
 
-  private int compareTo(Process process){
-    if (this.yoyudo() < process.yoyudo()) {
-      return -1;
-    } else if (this.yoyudo() > process.yoyudo()) {
-      return 1;
-    } else {
-      return 0;
-    }
+  public double getYoyudo() {
+    return this.yoyudo;
   }
 
   public static void main(String[] args) {
@@ -134,20 +127,24 @@ public class Process {
                         {2100, 1500, 2200, 1800, 2200, 2000}
                       }};
     Process p[] = new Process[90];
+    // List p = new ArrayList();
     int idx = 0;
     for(int i = 0; i < 5; i++){ // process
       for(int j = 0; j < 3; j++){ //lv
         for(int k = 0; k < 6; k++){ //month
           p[idx] = new Process(proc[i][j], proc_num[i][j][k], lv[j+1], i, j+1, k);
+          // p.add(new Process(proc[i][j], proc_num[i][j][k], lv[j+1], i, j+1, k));
           idx++;
         }
       }
     }
 
-    // Arrays.sort(p, (a,b) -> a.yoyudo - b.yoyudo);
+    Arrays.sort(p, Comparator.comparing(Process::getYoyudo).reversed());
+
+
 
     for(int i = 0; i < 90; i++){
-      System.out.println(p[i].getProcess() +","+ p[i].getLv() +","+ p[i].getMonth() + " : " + p[i].yoyudo());
+      System.out.println(p[i].getProcess() +","+ p[i].getLv() +","+ p[i].getMonth() + " : " + p[i].getYoyudo());
     }
   }
 }
