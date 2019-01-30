@@ -43,6 +43,76 @@ public class Process {
     return this.margin;
   }
 
+  private String Print() {
+    String p = "";
+    switch(this.process) {
+      case 0:
+        p = "A";
+        break;
+      case 1:
+        p = "B";
+        break;
+      case 2:
+        p = "C";
+        break;
+      case 3:
+        p = "D";
+        break;
+      case 4:
+        p = "E";
+        break;
+      default:
+        p = "ProcessError";
+        break;
+    }
+
+    String l = "";
+    switch(this.lv) {
+      case 9:
+        l = "Lv0";
+        break;
+      case 0:
+        l = "Lv1";
+        break;
+      case 1:
+        l = "Lv2";
+        break;
+      case 2:
+        l = "Lv3";
+        break;
+      default:
+        l = "LvError";
+        break;
+    }
+
+    String m = "";
+    switch(this.month) {
+      case 0:
+        m = "1月";
+        break;
+      case 1:
+        m = "2月";
+        break;
+      case 2:
+        m = "3月";
+        break;
+      case 3:
+        m = "4月";
+        break;
+      case 4:
+        m = "5月";
+        break;
+      case 5:
+        m = "6月";
+        break;
+      default:
+        m = "MonthError";
+        break;
+    }
+
+    return (p + ", " + l + ", " + m);
+  }
+
   private String getProcess() {
     switch(this.process) {
       case 0:
@@ -126,15 +196,26 @@ public class Process {
         for (int m = 0; m < month_len; m++){
           process[p][l][m] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m], n_human_now[l], p, l, m);
           process_1d[idx] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m], n_human_now[l], p, l, m);
-          // monthly_margin[m] += (process[p][l][m].need_human()) / (sum_human);
-          System.out.println(process[p][l][m].getProcess() + "," + process[p][l][m].getLv() + "," + process[p][l][m].getMonth() + " : " + process[p][l][m].getMargin());
+          // System.out.println(process[p][l][m].Print() + " : " + process[p][l][m].getMargin());
+          // System.out.println(process[p][l][m].Print() + " : " + process[p][l][m].need_human());
           idx++;
+          monthly_margin[m] += (process[p][l][m].need_human()) / (sum_human);
         }
       }
     }
+    // System.out.println(monthly_margin[0]);
     //sort
     Arrays.sort(process_1d, Comparator.comparing(Process::getMargin).reversed());
 
+    int loop = 0;
+    while(loop < 5){
+      int p = process_1d[loop].process;
+      int l = process_1d[loop].lv;
+      int m = process_1d[loop].month;
+      double margin = process_1d[loop].getMargin();
 
+      if(process_1d.length <= 0) break;
+      loop++;
+    }
   }
 }
