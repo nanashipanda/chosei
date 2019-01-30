@@ -186,11 +186,7 @@ public class Process {
     // FIXME:ソート用の1次元配列
     Process process_1d[] = new Process[proc_len * lv_len * month_len];
 
-    //////
-    double m_margin[] = new double[month_len];
-    Map<Integer, Double> monthly_margin = new HashMap<Integer, Double>();
 
-    ///////
 
     int idx = 0;
     // 各レベル以上の生産可能人数合計
@@ -198,6 +194,7 @@ public class Process {
     for (int i = 0; i < n_human_now.length; i++) {
       sum_human += n_human_now[i];
     }
+    Map<Integer, Double> monthly_margin = new HashMap<Integer, Double>();
 
     for (int p = 0; p < proc_len; p++) {
       for (int l = 0; l < lv_len; l++) {
@@ -216,7 +213,6 @@ public class Process {
           } else {
             monthly_margin.put(m, (monthly_margin.get(m) + (process[p][l][m].need_human()) / (sum_human)));
           }
-          m_margin[m] += (process[p][l][m].need_human()) / (sum_human);
         }
       }
     }
@@ -230,23 +226,11 @@ public class Process {
         return obj1.getValue().compareTo(obj2.getValue());
       }
     });
-    System.out.println(m_margin[0]);
     // sort
     Arrays.sort(process_1d, Comparator.comparing(Process::getMargin).reversed());
     for (Entry<Integer, Double> entry : list_entries) {
       System.out.println(entry.getKey() + " : " + entry.getValue());
     }
 
-    int loop = 0;
-    while (loop < 5) {
-      int p = process_1d[loop].process;
-      int l = process_1d[loop].lv;
-      int m = process_1d[loop].month;
-      double margin = process_1d[loop].getMargin();
-
-      if (process_1d.length <= 0)
-        break;
-      loop++;
-    }
   }
 }
