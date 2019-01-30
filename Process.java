@@ -11,7 +11,7 @@ public class Process {
   //各プロセスにおける生産予定数
   public double process_num;
   //各プロセスにおける稼働可能人数
-  public double human_num;
+  public double n_human;
   //各プロセスの余裕度
   public double margin;
 
@@ -21,12 +21,13 @@ public class Process {
   public int lv;
   //
 
-  public Process(double need_time, double process_num, double human_num, int process, int lv, int month){
+  public Process(double need_time, double process_num, double n_human, int process, int lv, int month){
     this.need_time = need_time;
     this.process_num = process_num;
-    this.human_num = human_num;
-    this.month = month;
+    this.n_human = n_human;
     this.process = process;
+    this.lv = lv;
+    this.month = month;
   }
 
   private double producible() {
@@ -38,7 +39,7 @@ public class Process {
   }
 
   public double getMargin() {
-    this.margin = this.need_human() / this.human_num;
+    this.margin = this.need_human() / this.n_human;
     return this.margin;
   }
 
@@ -61,13 +62,13 @@ public class Process {
 
   private String getLv() {
     switch(this.lv) {
-      case 0:
+      case 9:
         return "Lv0";
-      case 1:
+      case 0:
         return "Lv1";
-      case 2:
+      case 1:
         return "Lv2";
-      case 3:
+      case 2:
         return "Lv3";
       default:
         return "LvError";
@@ -77,17 +78,17 @@ public class Process {
   private String getMonth() {
     switch(this.month) {
     case 0:
-      return "1";
+      return "1月";
     case 1:
-      return "2";
+      return "2月";
     case 2:
-      return "3";
+      return "3月";
     case 3:
-      return "4";
+      return "4月";
     case 4:
-      return "5";
+      return "5月";
     case 5:
-      return "6";
+      return "6月";
     default:
       return "MonthError";
   }
@@ -95,8 +96,12 @@ public class Process {
 
 
   public static void main(String[] args) {
-    int[] human_num_before = {12, 7, 3};
-    int[] human_num_after = {15, 9, 4};
+    //レベル1以上の現在の人数
+    int h_len = Constants.n_human_before.length;
+    int n_human_now[] = new int[h_len];
+    for( int i = 0; i < h_len; i++){
+      n_human_now[i] = Constants.n_human_before[i];
+    }
 
     //TODO: 各定義場所は？
     int proc_len = Constants.ProcMin.length;
@@ -104,13 +109,32 @@ public class Process {
     int month_len = Constants.ProcNum[0].length;
 
     Process process[][][] = new Process[proc_len][lv_len][month_len];
+    //FIXME:ソート用の1次元配列
+    Process process_1d[] = new Process[proc_len * lv_len * month_len];
+
+    double monthly_margin[] = new double[month_len];
+
+    int idx = 0;
+    //各レベル以上の生産可能人数合計
+    int sum_human = 0;
+    for (int i = 0; i < n_human_now.length; i++){
+      sum_human += n_human_now[i];
+    }
+
     for (int p = 0; p < proc_len; p++){
       for (int l = 0; l < lv_len; l++){
         for (int m = 0; m < month_len; m++){
-          process[p][l][m] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m], human_num_before[l], p, l, m);
-          System.out.println(process[p][l][m].getMargin());
+          process[p][l][m] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m], n_human_now[l], p, l, m);
+          process_1d[idx] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m], n_human_now[l], p, l, m);
+          // monthly_margin[m] += (process[p][l][m].need_human()) / (sum_human);
+          System.out.println(process[p][l][m].getProcess() + "," + process[p][l][m].getLv() + "," + process[p][l][m].getMonth() + " : " + process[p][l][m].getMargin());
+          idx++;
         }
       }
     }
+    //sort
+    Arrays.sort(process_1d, Comparator.comparing(Process::getMargin).reversed());
+
+
   }
 }
