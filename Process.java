@@ -2,21 +2,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.*;
+import Constants;
 
 public class Process {
 
-  public double work_day = 20;
-  public double work_time = 7;
-
-  public double month_work_time = this.work_day * this.work_time * 60;
-
+  //各プロセスの必要時間
   public double need_time;
+  //各プロセスにおける生産予定数
   public double process_num;
+  //各プロセスにおける稼働可能人数
   public double human_num;
+  //各プロセスの余裕度
+  public double margin;
+
+  //TODO:indexで管理
   public int month;
   public int process;
   public int lv;
-  public double yoyudo;
+  //
 
   public Process(double need_time, double process_num, double human_num, int process, int lv, int month){
     this.need_time = need_time;
@@ -24,16 +27,19 @@ public class Process {
     this.human_num = human_num;
     this.month = month;
     this.process = process;
-    this.lv = lv;
-    this.yoyudo();
   }
 
-  private double can_make_amount() {
-    return month_work_time / this.need_time;
+  private double producible() {
+    return Constants.work_time / this.need_time;
   }
 
   private double need_human() {
-    return this.process_num / this.can_make_amount();
+    return this.process_num / this.producible();
+  }
+
+  public double getMargin() {
+    this.margin = this.need_human() / this.human_num;
+    return this.margin;
   }
 
   private String getProcess() {
@@ -69,7 +75,7 @@ public class Process {
   }
 
   private String getMonth() {
-  switch(this.month) {
+    switch(this.month) {
     case 0:
       return "1";
     case 1:
@@ -87,66 +93,24 @@ public class Process {
   }
 }
 
-  private void yoyudo() {
-    this.yoyudo = this.need_human() / this.human_num;
-  }
-
-  public double getYoyudo() {
-    return this.yoyudo;
-  }
 
   public static void main(String[] args) {
-    int[][] proc = {{15, 15, 10}, {15, 14, 12}, {14, 9, 15}, {13, 8, 10}, {10, 12, 11}};
+    int[] human_num_before = {12, 7, 3};
+    int[] human_num_after = {15, 9, 4};
 
-    int[] lv = {15, 12, 7, 3};
-    int[] lv_ojt = {15, 15, 9, 4};
+    //TODO: 各定義場所は？
+    int proc_len = Constants.ProcMin.length;
+    int lv_len = Constants.ProcMin[0].length;
+    int month_len = Constants.ProcNum[0].length;
 
-    int[][][] proc_num = {{
-                      {1600, 1000, 1200, 1400, 1800, 1000},
-                      {1000, 1600, 1200, 1400, 1800, 1800},
-                      {2100, 1500, 2200, 1800, 2200, 2000}
-                       },
-                      {
-                       {2100, 1500, 2200, 1800, 2200, 2000},
-                       {2000, 2500, 1500, 2200, 2000, 2400},
-                       {1000, 1600, 1200, 1400, 1800, 1800}
-                      },
-                      {
-                       {1000, 1600, 1200, 1400, 1800, 1800},
-                       {1600, 1000, 1200, 1400, 1800, 1000},
-                       {2000, 2500, 1500, 2200, 2000, 2400}
-                      },
-                      {
-                        {2000, 2500, 1500, 2200, 2000, 2400},
-                        {2100, 1500, 2200, 1800, 2200, 2000},
-                        {1600, 1000, 1200, 1400, 1800, 1000}
-                      },
-                      {
-                        {1600, 1000, 1200, 1400, 1800, 1000},
-                        {1000, 1600, 1200, 1400, 1800, 1800},
-                        {2100, 1500, 2200, 1800, 2200, 2000}
-                      }};
-    Process p[] = new Process[90];
-    int idx = 0;
-    for(int i = 0; i < 5; i++){ // process
-      for(int j = 0; j < 3; j++){ //lv
-        for(int k = 0; k < 6; k++){ //month
-          p[idx] = new Process(proc[i][j], proc_num[i][j][k], lv[j+1], i, j+1, k);
-          idx++;
+    Process process[][][] = new Process[proc_len][lv_len][month_len];
+    for (int p = 0; p < proc_len; p++){
+      for (int l = 0; l < lv_len; l++){
+        for (int m = 0; m < month_len; m++){
+          process[p][l][m] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m], human_num_before[l], p, l, m);
+          System.out.println(process[p][l][m].getMargin());
         }
       }
-    }
-
-    Arrays.sort(p, Comparator.comparing(Process::getYoyudo).reversed());
-    System.out.println(p[0].getProcess());
-    System.out.println(p[0].getLv());
-    System.out.println(p[0].getMonth());
-
-
-
-
-    for(int i = 0; i < 90; i++){
-      System.out.println(p[i].getProcess() +","+ p[i].getLv() +","+ p[i].getMonth() + " : " + p[i].getYoyudo());
     }
   }
 }
