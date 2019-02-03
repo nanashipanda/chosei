@@ -11,16 +11,16 @@ import java.util.Comparator;
 
 public class Process {
 
-  // 各プロセスの必要時間
+  // �?プロセスの�?要時�?
   public double need_time;
-  // 各プロセスにおける生産予定数
+  // �?プロセスにおける生産予定数
   public double process_num;
-  // 各プロセスにおける稼働可能人数
+  // �?プロセスにおける稼働可能人数
   public double n_human;
-  // 各プロセスの余裕度
+  // �?プロセスの余裕度
   public double margin;
 
-  // TODO:indexで管理
+  // TODO:indexで管�?
   public int month;
   public int process;
   public int lv;
@@ -73,7 +73,7 @@ public class Process {
 
     String l = "";
     switch (this.lv) {
-    case 9:
+    case -1:
       l = "Lv0";
       break;
     case 0:
@@ -93,22 +93,22 @@ public class Process {
     String m = "";
     switch (this.month) {
     case 0:
-      m = "1月";
+      m = "1�?";
       break;
     case 1:
-      m = "2月";
+      m = "2�?";
       break;
     case 2:
-      m = "3月";
+      m = "3�?";
       break;
     case 3:
-      m = "4月";
+      m = "4�?";
       break;
     case 4:
-      m = "5月";
+      m = "5�?";
       break;
     case 5:
-      m = "6月";
+      m = "6�?";
       break;
     default:
       m = "MonthError";
@@ -118,88 +118,139 @@ public class Process {
     return (p + ", " + l + ", " + m);
   }
 
-
   public static void main(String[] args) {
-    // TODO: 各定義場所は？
+    // TODO: �?定義場�?は?�?
     int proc_len = Constants.ProcMin.length;
     int lv_len = Constants.ProcMin[0].length;
     int month_len = Constants.ProcNum[0].length;
 
-    // レベル1以上の現在の人数
-    int h_len = Constants.n_human_before.length;
-    int n_human_now[][] = new int[proc_len][h_len];
-    for (int i = 0; i < proc_len; i++){
-      for (int j = 0; j < h_len; j++){
-        n_human_now[i][j] = Constants.n_human_before[j];
-      }
-   }
-
-    Process process[][][] = new Process[proc_len][lv_len][month_len];
-    // FIXME:ソート用の1次元配列
-    Process process_1d[] = new Process[proc_len * lv_len * month_len];
-
-
-
-    int idx = 0;
-    // 各レベル以上の生産可能人数合計
-    int sum_human[] = new int[proc_len];
-    for (int i = 0; i < proc_len; i++) {
-      for (int j = 0; j < h_len; j++){
-        sum_human[i] += n_human_now[i][j];
-      }
-    }
-    Map<Integer, Double> monthly_margin = new HashMap<Integer, Double>();
-
+    // レベル1以上�?�現在の人数
+    int n_human_now[][][] = new int[proc_len][lv_len][month_len];
     for (int p = 0; p < proc_len; p++) {
       for (int l = 0; l < lv_len; l++) {
-        for (int m = 0; m < month_len; m++) {
-          process[p][l][m] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m],
-              n_human_now[p][l], p, l, m);
-          process_1d[idx] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m],
-              n_human_now[p][l], p, l, m);
-          idx++;
-          if (p == 0 && l == 0) {
-            monthly_margin.put(m, (process[p][l][m].need_human()) / (sum_human[p]));
-          } else {
-            monthly_margin.put(m, (monthly_margin.get(m) + (process[p][l][m].need_human()) / (sum_human[p])));
-          }
+        for (int m = 0; m < month_len; m++){
+        n_human_now[p][l][m] = Constants.n_human_before[l];
         }
       }
     }
-    // 2.Map.Entryのリストを作成する
-    List<Entry<Integer, Double>> list_entries = new ArrayList<Entry<Integer, Double>>(monthly_margin.entrySet());
 
-    // 3.比較関数Comparatorを使用してMap.Entryの値を比較する(昇順)
-    Collections.sort(list_entries, new Comparator<Entry<Integer, Double>>() {
-      public int compare(Entry<Integer, Double> obj1, Entry<Integer, Double> obj2) {
-        // 4. 昇順
-        return obj1.getValue().compareTo(obj2.getValue());
-      }
-    });
-    // sort
-    Arrays.sort(process_1d, Comparator.comparing(Process::getMargin).reversed());
+    Process process[][][] = new Process[proc_len][lv_len][month_len];
+    // FIXME:ソート用の1次�?配�??
+    Process process_1d[] = new Process[proc_len * lv_len * month_len];
 
-    int target_month = process_1d[0].month;
-    int target_process = process_1d[0].process;
-    int target_lv = process_1d[0].lv;
-    for (Entry<Integer, Double> entry : list_entries) {
-      if (entry.getKey() >= target_month){
-        continue;
-      }
-      double tmp_human = process[target_process][target_lv-1][entry.getKey()].need_human();
-      if (tmp_human / (n_human_now[target_process][target_lv-1] - 0.5) >= 1){
-        continue;
-      }
-      // System.out.println(entry.getKey() + " : " + entry.getValue());
+    boolean complete[][] = new boolean[proc_len][lv_len];
 
-      n_human_now[target_process][target_lv]++;
-      break;
-    }
-
-    for(int i = 0; i < 5; i++){
-      for (int j = 0; j < 3; j++){
-        System.out.println(n_human_now[i][j]);
+    for (int i = 0; i < proc_len; i++) {
+      for (int j = 0; j < lv_len; j++) {
+        complete[i][j] = false;
       }
     }
+
+    // ここから計�?
+    for (int loop = 0; loop < proc_len * lv_len * month_len; loop++) {
+      boolean all_complete = true;
+      System.out.println(loop);
+      int idx = 0;
+      // �?レベル以上�?�生産可能人数合�?
+      // int sum_human[] = new int[proc_len];
+      int sum_human[] = new int[month_len];
+      for (int m = 0; m < month_len; m++) {
+        for (int p = 0; p < proc_len; p++) {
+          sum_human[m] += n_human_now[p][0][m];
+        }
+        System.out.println("sum_human : " + sum_human[m]);
+      }
+
+      // for (int i = 0; i < 2; i++){
+      // System.out.println("sum_human : " + i + " : " + sum_human);
+      // }
+
+      // 全体余裕度の計�?
+      // FIXME:メソ�?ド�??り�?�?
+      Map<Integer, Double> monthly_margin = new HashMap<Integer, Double>();
+
+      double sum_need_human[] = new double[month_len];
+      for (int p = 0; p < proc_len; p++) {
+        for (int l = 0; l < lv_len; l++) {
+          for (int m = 0; m < month_len; m++) {
+            process[p][l][m] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m],
+                n_human_now[p][l][m], p, l, m);
+            process_1d[idx] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m],
+                n_human_now[p][l][m], p, l, m);
+            sum_need_human[m] += process[p][l][m].need_human();
+            idx++;
+          }
+        }
+      }
+      for (int m = 0; m < month_len; m++){
+        monthly_margin.put(m, sum_need_human[m]/sum_human[m]);
+      }
+      List<Entry<Integer, Double>> list_entries = new ArrayList<Entry<Integer, Double>>(monthly_margin.entrySet());
+      Collections.sort(list_entries, new Comparator<Entry<Integer, Double>>() {
+        public int compare(Entry<Integer, Double> obj1, Entry<Integer, Double> obj2) {
+          // �?�?
+          return obj1.getValue().compareTo(obj2.getValue());
+        }
+      });
+      // 全体余裕度計算ここまで
+      for (Entry<Integer, Double> entry : list_entries) {
+        System.out.println(entry.getKey() + " : " + entry.getValue());
+      }
+
+      // sort
+      Arrays.sort(process_1d, Comparator.comparing(Process::getMargin).reversed());
+
+      int target_process = 0;
+      int target_lv = 0;
+      int target_month = 0;
+      for (int i = 0; i < (proc_len * lv_len * month_len); i++) {
+        // System.out.println(i);
+        target_process = process_1d[i].process;
+        target_lv = process_1d[i].lv;
+        target_month = process_1d[i].month;
+        if (target_month == 0) {
+          continue;
+        }
+        if (complete[target_process][target_lv] == false) {
+          // System.out.println("target_month : " + target_month);
+          break;
+        }
+      }
+      int ojt_lv = target_lv - 1;
+      int ojt_month = 0;
+      // System.out.println(process[target_process][target_lv][target_month].Print());
+      for (Entry<Integer, Double> entry : list_entries) {
+        ojt_month = entry.getKey();
+        if (ojt_month >= target_month) {
+          continue;
+        }
+        if (ojt_lv < 0) {
+          break;
+        }
+        double tmp_human = process[target_process][ojt_lv][ojt_month].need_human();
+        if (tmp_human / (n_human_now[target_process][ojt_lv][ojt_month] - 0.5) >= 1) {
+          continue;
+        }
+        break;
+      }
+      for (int m = ojt_month+1; m < month_len; m++){
+        n_human_now[target_process][target_lv][m]++;
+      }
+      if (n_human_now[target_process][target_lv][target_month] >= Constants.n_human_after[target_lv]) {
+        complete[target_process][target_lv] = true;
+      }
+      // 標準�?��?
+      System.out.println(process[target_process][target_lv][ojt_month].Print());
+      for (int i = 0; i < proc_len; i++) {
+        for (int j = 0; j < lv_len; j++) {
+          if (complete[i][j] == false) {
+            all_complete = false;
+          }
+        }
+      }
+      if (all_complete)
+        break;
+    }
+
   }
 }
