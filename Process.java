@@ -118,69 +118,21 @@ public class Process {
     return (p + ", " + l + ", " + m);
   }
 
-  private String getProcess() {
-    switch (this.process) {
-    case 0:
-      return "A";
-    case 1:
-      return "B";
-    case 2:
-      return "C";
-    case 3:
-      return "D";
-    case 4:
-      return "E";
-    default:
-      return "ProcError";
-    }
-  }
-
-  private String getLv() {
-    switch (this.lv) {
-    case 9:
-      return "Lv0";
-    case 0:
-      return "Lv1";
-    case 1:
-      return "Lv2";
-    case 2:
-      return "Lv3";
-    default:
-      return "LvError";
-    }
-  }
-
-  private String getMonth() {
-    switch (this.month) {
-    case 0:
-      return "1月";
-    case 1:
-      return "2月";
-    case 2:
-      return "3月";
-    case 3:
-      return "4月";
-    case 4:
-      return "5月";
-    case 5:
-      return "6月";
-    default:
-      return "MonthError";
-    }
-  }
 
   public static void main(String[] args) {
-    // レベル1以上の現在の人数
-    int h_len = Constants.n_human_before.length;
-    int n_human_now[] = new int[h_len];
-    for (int i = 0; i < h_len; i++) {
-      n_human_now[i] = Constants.n_human_before[i];
-    }
-
     // TODO: 各定義場所は？
     int proc_len = Constants.ProcMin.length;
     int lv_len = Constants.ProcMin[0].length;
     int month_len = Constants.ProcNum[0].length;
+
+    // レベル1以上の現在の人数
+    int h_len = Constants.n_human_before.length;
+    int n_human_now[][] = new int[proc_len][h_len];
+    for (int i = 0; i < proc_len; i++){
+      for (int j = 0; j < h_len; j++){
+        n_human_now[i][j] = Constants.n_human_before[j];
+      }
+   }
 
     Process process[][][] = new Process[proc_len][lv_len][month_len];
     // FIXME:ソート用の1次元配列
@@ -190,9 +142,11 @@ public class Process {
 
     int idx = 0;
     // 各レベル以上の生産可能人数合計
-    int sum_human = 0;
-    for (int i = 0; i < n_human_now.length; i++) {
-      sum_human += n_human_now[i];
+    int sum_human[] = new int[proc_len];
+    for (int i = 0; i < proc_len; i++) {
+      for (int j = 0; j < h_len; j++){
+        sum_human[i] += n_human_now[i][j];
+      }
     }
     Map<Integer, Double> monthly_margin = new HashMap<Integer, Double>();
 
@@ -200,18 +154,14 @@ public class Process {
       for (int l = 0; l < lv_len; l++) {
         for (int m = 0; m < month_len; m++) {
           process[p][l][m] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m],
-              n_human_now[l], p, l, m);
+              n_human_now[p][l], p, l, m);
           process_1d[idx] = new Process(Constants.ProcMin[p][l], Constants.ProcNum[Constants.ProcPart[p][l]][m],
-              n_human_now[l], p, l, m);
-          // System.out.println(process[p][l][m].Print() + " : " +
-          // process[p][l][m].getMargin());
-          // System.out.println(process[p][l][m].Print() + " : " +
-          // process[p][l][m].need_human());
+              n_human_now[p][l], p, l, m);
           idx++;
           if (p == 0 && l == 0) {
-            monthly_margin.put(m, (process[p][l][m].need_human()) / (sum_human));
+            monthly_margin.put(m, (process[p][l][m].need_human()) / (sum_human[p]));
           } else {
-            monthly_margin.put(m, (monthly_margin.get(m) + (process[p][l][m].need_human()) / (sum_human)));
+            monthly_margin.put(m, (monthly_margin.get(m) + (process[p][l][m].need_human()) / (sum_human[p])));
           }
         }
       }
@@ -228,9 +178,28 @@ public class Process {
     });
     // sort
     Arrays.sort(process_1d, Comparator.comparing(Process::getMargin).reversed());
+
+    int target_month = process_1d[0].month;
+    int target_process = process_1d[0].process;
+    int target_lv = process_1d[0].lv;
     for (Entry<Integer, Double> entry : list_entries) {
-      System.out.println(entry.getKey() + " : " + entry.getValue());
+      if (entry.getKey() >= target_month){
+        continue;
+      }
+      double tmp_human = process[target_process][target_lv-1][entry.getKey()].need_human();
+      if (tmp_human / (n_human_now[target_process][target_lv-1] - 0.5) >= 1){
+        continue;
+      }
+      // System.out.println(entry.getKey() + " : " + entry.getValue());
+
+      n_human_now[target_process][target_lv]++;
+      break;
     }
 
+    for(int i = 0; i < 5; i++){
+      for (int j = 0; j < 3; j++){
+        System.out.println(n_human_now[i][j]);
+      }
+    }
   }
 }
