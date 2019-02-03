@@ -18,6 +18,10 @@ public final class Constants {
         // { 10, 12, 11 } //E lv1, lv2, lv3
     };
 
+    //計算の開始月
+    //0: 1月, 1: 2月, 2: 3月, ... , n: n+1月
+    public static final int start_month = 0;
+
     //各製品における各月の生産予定個数
     public static final int ProcNum[][] = {
         // { 1600, 1000, 1200, 1400, 1800, 1000}, //製品1
