@@ -63,7 +63,7 @@ public class Process {
     for (int p = 0; p < proc_len; p++) {
       for (int l = 0; l < lv_len; l++) {
         for (int m = 0; m < month_len; m++){
-        n_human_now[p][l][m] = Constants.n_human_before[l];
+        n_human_now[p][l][m] = Constants.n_human_before[p][l];
         }
       }
     }
@@ -154,7 +154,7 @@ public class Process {
       for (int m = ojt_month+1; m < month_len; m++){
         n_human_now[target_process][target_lv][m]++;
       }
-      if (n_human_now[target_process][target_lv][ojt_month+1] >= Constants.n_human_after[target_lv]) {
+      if (n_human_now[target_process][target_lv][ojt_month+1] >= Constants.n_human_after[target_process][target_lv]) {
         complete[target_process][target_lv] = true;
       }
       // 標準出力
@@ -170,6 +170,5 @@ public class Process {
       if (all_complete)
         break;
     }
-
   }
 }
